@@ -19,7 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace BackDoor
+namespace tc32k
 {
     public partial class Form1 : Form
     {
