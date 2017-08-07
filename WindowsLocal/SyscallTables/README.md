@@ -1,5 +1,5 @@
 
-# Syscall tables
+# Syscall tables 
 ## Combined Windows x64 syscall tables
 
 ## Ntoskrnl service tables
