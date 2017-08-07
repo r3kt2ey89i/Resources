@@ -1,0 +1,230 @@
+#!usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+
+
+def set_defaultencoding_globally(encoding='utf-8'):
+    assert sys.getdefaultencoding() in ('ascii', 'mbcs', encoding)   # so you wont get fucked with ecodings..
+    import imp
+    _sys_org = imp.load_dynamic('_sys_org', 'sys')
+    _sys_org.setdefaultencoding(encoding)
+
+
+set_defaultencoding_globally('utf-8')
+
+
+import selenium.common.exceptions as Ex
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common import alert
+from selenium.webdriver.common.keys import Keys
+import requests, json, time, sys
+from bs4 import BeautifulSoup
+import html2text
+import os
+from time import gmtime, strftime
+import sqlite3
+
+current = "/.."
+curr_path = "/.."
+
+
+class SarinBot:
+
+    def __init__(self, param=None, pa=None, target=''):
+
+        self._targets = list()
+        self._ind = 0
+
+        for _ in target:
+            self._targets.append(_)
+
+        self._driver = None
+
+        def handle_pop_ups():
+            from selenium import webdriver
+            from selenium.webdriver.chrome.options import Options
+            #path_to_extension = '/..' # addblock..
+            chrome_options = Options()
+            #chrome_options.add_argument('load-extension=' + path_to_extension)
+            chrome_options.add_argument("--disable-notifications")
+            self._driver = webdriver.Chrome('/...',chrome_options=chrome_options)
+            self._driver.create_options()
+
+        handle_pop_ups()
+
+        self._param = param
+        self._path = pa
+        self._ind = (
+            ('loginPage..',
+             'the id of the user name..',
+             'password id..',
+             'submit id..',
+             'browse the site..',
+             'element to click();',
+			                  # you split by the parameters..    ~~~~~~~   ..
+             "https://yourTargetSite.tld/search/q?keywords=~~~~~~~&locationId=il%3A0&sortBy=DD&num=2000" 
+             ,"additional param"),
+            ('the'
+             'same frame...',),
+            ('....'
+             ',,...',
+             '..,,,,,.',
+             ',',
+             '...',
+             '....',
+             '_5d-5'),
+            ('..',
+             '.',
+             '.'),
+        )
+        self._unpack = param
+        self._login = [ 'login.', 'psswd']
+        self._Que = []
+
+    def get(self, param=None):
+        try:
+            time.sleep(3)
+            self._driver.get(param)
+        except Ex as e: print e
+
+    @staticmethod
+    def remove_non_ascii_1(te):
+        return ''.join(i for i in te if 32 <= ord(i) < 126)
+
+    def login(self, param=None, ind=0, keyClick=None):
+        us = param[0]
+        pssw = param[1]
+        para = list()
+        if ind == 0:
+            para = self._link
+        else:
+            para = self._face
+
+        username = self._driver.find_element_by_id(us)
+        password = self._driver.find_element_by_id(pssw)
+        time.sleep(4)
+        username.send_keys(para[0])
+        password.send_keys(para[1])
+        time.sleep(4)
+        try:
+
+            self._driver.find_element_by_name(keyClick).click()
+        except Ex.NoSuchElementException as e:
+            del e
+
+            self._driver.find_element_by_id(keyClick).click()
+
+
+    def parse(self,param):
+        try:
+            self._driver.get(param)
+        except Ex as someError:
+            print(someError)
+
+    def digest(self, param, tar=""):
+
+        if " " in tar:
+            targ = tar.split(" ")[0]
+        else:
+            targ = tar
+
+        def reader(pa):
+            with open(pa, mode='r') as raw_data:
+                lines = raw_data.readlines()
+                for line in lines:
+                    if line != "" and line != "\n":
+                        yield line
+
+        content = self._driver.page_source
+        soup = BeautifulSoup(content)
+        h = html2text.HTML2Text()
+        plain = h.handle(self.remove_non_ascii_1(content))
+        if param in plain:
+            return -1
+        else:
+            try:
+                with open(current, mode="w") as curr:
+                    curr.write(plain)
+                regax = "](/jobs/view/"
+                for y in reader(current):
+                    if regax in y:
+                        jb = y.split('](')[1].split(")")[0]
+                        job = self._ind[0][-1]+jb
+                        self._Que.append(job)
+                os.chdir(curr_path)
+                execv = "mkdir " + targ
+                os.system(execv)
+                os.chdir(curr_path+"/"+targ)
+                with open("jobs", mode='w') as tmp:
+                    for q in self._Que:
+                        tmp.write(q+"\n")
+                os.chdir(curr_path)
+                with open(current,mode='w') as delete:
+                    delete.truncate()
+                self._Que = []
+                return 1
+            except:
+                return -1
+
+    def open(self, param):
+        try:
+            for expend in self._driver.find_elements_by_xpath("//*[contains(text(), '"+param+"')]"):
+                try:
+                    expend.click()
+                    # print expend.get_attribute("href")
+                except: pass
+            content = self._driver.page_source
+            soup = BeautifulSoup(content)
+            h = html2text.HTML2Text()
+            plain = h.handle(content)
+            with open("/...", mode="a") as al:     # save it..
+                al.write(plain)
+            return ""
+        except Ex:
+            return ""
+
+    def __index__(self):
+        return self._ind
+
+    def li(self):
+        return self._targets
+
+    def quit(self):
+        self._driver.quit()
+
+
+if __name__ == "__main__":
+
+    p = "/.."  # the work Que.
+    lis = list()
+    li = list()
+
+    
+
+    with open(p, mode='r') as tr:
+        li = tr.read().split("\n")[:]
+
+    le = len(li)
+    newBot = SarinBot(target=li)
+    time.sleep(2)
+    index = newBot.__index__()[0]
+    time.sleep(1)
+    newBot.get(index[0])
+    time.sleep(1)
+    newBot.login(param=(index[1], index[2]), keyClick=index[3])
+    for l in range(le):
+        # concat = index[-2].split("%%%%%%%")
+        print(newBot.li()[l])
+        concat = globs.split("$$$$$$")
+        target = concat[0] + newBot.li()[l] + concat[1]  #
+        time.sleep(2)
+        os.chdir("/..")
+        newBot.get(target)
+        newBot.digest(param,li[l])
+        res = newBot.open("")
+
+
+
+
