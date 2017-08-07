@@ -7,7 +7,7 @@
 */
 
 
-namespace BackDoor
+namespace tc32k
 {
     partial class Form1
     {
